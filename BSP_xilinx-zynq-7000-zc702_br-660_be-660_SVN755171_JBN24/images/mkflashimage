@@ -22,8 +22,12 @@ fi
 
 echo Generating BOOT.bin...
 # Use bootgen to create the BOOT.bin that contains FSBL + IPL
+
+#---------------------------------------------------------------
 # Please modify the SDK version (2014.x) to match with the currect version of the tool
-/opt/Xilinx/SDK/2014.1/bin/bootgen -image boot.bif -o i BOOT.bin
+#/opt/Xilinx/SDK/2014.1/bin/bootgen -image boot.bif -o i BOOT.bin
+C:/Xilinx/14.4/ISE_DS/PlanAhead/bin/unwrapped/win64.o/bootgen.exe -image boot.bif -o i BOOT.bin
+#---------------------------------------------------------------
 
 # Check that it has been created
 if [ -f BOOT.bin ]

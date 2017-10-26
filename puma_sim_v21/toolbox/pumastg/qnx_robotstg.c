@@ -27,10 +27,12 @@
    --- 12/01/99 RMV     Better management of pumaVarsG.discrete.
    --- 03/27/00 RMV     Fixed sign error in coupling compensation. v4.2
    --- 07/23/03 RMV     Updated to sched2. Added cal init. Changed gains. v6.0
-   --- 10/24/17 YHG     Updated parameter formats for compatibility with QNX 6.x API on the following:
-   --- 					include stdint.h and sys/mman.h
-   --- 					uintptr_t mmap_device_io(length, address);
-   --- 					in8(uintptr_t); out(uintptr_t, value).
+   --- 10/24/17 YHG     Updates interface of in*() and out*() functions for
+   ---                  compatiblity with QNX 6.x API, on the following:
+   --- 						include stdint.h and sys/mman.h for standard int's.
+   --- 						uintptr_t mmap_device_io(length, address);
+   --- 						in8(uintptr_t); out8(uintptr_t, value),
+   ---						and so with in16 and out 16.
    --- */
 
 #define ROBOT_SRC

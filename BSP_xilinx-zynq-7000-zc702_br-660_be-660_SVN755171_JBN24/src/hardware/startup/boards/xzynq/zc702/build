@@ -157,7 +157,7 @@
     io-pkt-v4-hc -dxzynq -ptcpip stacksize=8192
     waitfor /dev/socket
     if_up -p -a xzynq0
-    ifconfig xzynq0 10.1.1.2/8
+    ifconfig xzynq0 192.168.1.131/8
     ## or
     #display_msg Getting network address with DHCP...
     #if_up -p -a xzynq0
@@ -440,6 +440,20 @@ umask guest 0707
 /etc/services=${QNX_TARGET}/etc/services
 
 ###########################################################################
+## OTHER LIBRARIES FROM DEPENDENCY
+###########################################################################
+/lib/libaoi.so.1 = libaoi.so.1 
+/lib/libcrypto.so.2 = libcrypto.so.2 
+/lib/libnbutil.so.1 = libnbutil.so.1 
+/lib/libpps.so.1 = libpps.so.1 
+/lib/libsqlite3.so.1 = libsqlite3.so.1 
+/lib/libstrm.so.1 = libstrm.so.1
+/lib/libicui18n.so.49 = libicui18n.so.49
+/lib/libcpp-ne.so.5 = libcpp-ne.so.5 
+/lib/libicudata.so.49 = libicudata.so.49 
+/lib/libicuuc.so.49 = libicuuc.so.49
+
+###########################################################################
 ## general commands
 ###########################################################################
 arp
@@ -465,6 +479,7 @@ env
 find
 gawk
 getconf
+gcc
 grep
 hostname
 ifconfig
@@ -473,6 +488,7 @@ ln
 ls
 less
 logger
+make
 mkdir
 mkdosfs
 mkqnx6fs
@@ -492,6 +508,8 @@ rm
 [perms=0755]out32
 printf
 ps
+qcc
+qdb
 qtalk
 random
 sed
@@ -502,6 +520,8 @@ slay
 sleep
 slogger
 sloginfo
+ssh
+sshd
 stty
 top
 tracelogger

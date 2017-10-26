@@ -39,7 +39,11 @@
    --- 03/26/00 RMV     Fixed sign error in wrist coupling factors. v4.2
    --- 06/19/00 RMV     Version 4.3 includes fix of Q_RefG update in calib.c
    --- 10/26/17 YHG     Updates interface of in*() and out*() functions for
-   ---                  compatiblity with QNX 6.x API.
+   ---                  compatiblity with QNX 6.x API, on the following:
+   --- 						include stdint.h and sys/mman.h for standard int's.
+   --- 						uintptr_t mmap_device_io(length, address);
+   --- 						in8(uintptr_t); out8(uintptr_t, value),
+   ---						and so with in16 and out 16.
    --- */
 
 #define ROBOT_SRC

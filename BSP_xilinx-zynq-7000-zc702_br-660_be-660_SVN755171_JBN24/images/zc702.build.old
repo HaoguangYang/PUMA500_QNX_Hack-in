@@ -85,9 +85,9 @@
     #######################################################################
     ## I2C driver
     #######################################################################
-    #display_msg Starting I2C1 and I2C2 driver (/dev/i2c1,2)...
-    #i2c-xzynq -p 0xE0004000 -i 57 --u 1
-    #i2c-xzynq -p 0xE0005000 -i 80 --u 2
+    display_msg Starting I2C1 and I2C2 driver (/dev/i2c1,2)...
+    i2c-xzynq -p 0xE0004000 -i 57 --u 1
+    i2c-xzynq -p 0xE0005000 -i 80 --u 2
 
     #######################################################################
     ## SD memory card driver
@@ -107,8 +107,8 @@
     #######################################################################
     ## CAN
     #######################################################################
-    #display_msg Starting CAN driver (/dev/can1/)...
-    #dev-can-xzynq -p9 xzynqcan1
+    display_msg Starting CAN driver (/dev/can1/)...
+    dev-can-xzynq -p9 xzynqcan1
 
     #######################################################################
     ## OCM
@@ -156,12 +156,12 @@
     display_msg Starting Network driver...
     io-pkt-v4-hc -dxzynq -ptcpip stacksize=8192
     waitfor /dev/socket
-    if_up -p -a xzynq0
-    ifconfig xzynq0 192.168.1.131/8
-    ## or
-    #display_msg Getting network address with DHCP...
     #if_up -p -a xzynq0
-    #dhcp.client -i xzynq0
+    #ifconfig xzynq0 10.1.1.2/8
+    ## or
+    display_msg Getting network address with DHCP...
+    if_up -p -a xzynq0
+    dhcp.client -i xzynq0
 
     #######################################################################
     ## REMOTE_DEBUG (gdb or Momentics)
@@ -440,102 +440,43 @@ umask guest 0707
 /etc/services=${QNX_TARGET}/etc/services
 
 ###########################################################################
-## OTHER LIBRARIES FROM DEPENDENCY
-###########################################################################
-/lib/libaoi.so.1 = libaoi.so.1 
-/lib/libcrypto.so.2 = libcrypto.so.2 
-/lib/libnbutil.so.1 = libnbutil.so.1 
-/lib/libpps.so.1 = libpps.so.1 
-/lib/libsqlite3.so.1 = libsqlite3.so.1 
-/lib/libstrm.so.1 = libstrm.so.1
-/lib/libicui18n.so.49 = libicui18n.so.49
-/lib/libcpp-ne.so.5 = libcpp-ne.so.5 
-/lib/libicudata.so.49 = libicudata.so.49 
-/lib/libicuuc.so.49 = libicuuc.so.49
-
-###########################################################################
 ## general commands
 ###########################################################################
-arp
-awk
-basename
-cat
-chmod
 cp
-chgrp
-chown
-cut
-date
-dd
-devb-umass
-devb-ram
-dhcp.client
-df
-diff
-dirname
-du
-echo
-env
-find
-gawk
-getconf
-gcc
-grep
-hostname
-ifconfig
-if_up
-ln
 ls
-less
-logger
-make
-mkdir
-mkdosfs
-mkqnx6fs
-mv
-more
-mount
-mv
-netstat
-nicinfo
-ntpdate
-on
-pidin
-ping
+cat
+ksh
 pipe
-pwd
-rm
-[perms=0755]out32
-printf
-ps
-qcc
-qdb
-qtalk
-random
-sed
-setconf
-sh
-shutdown
-slay
-sleep
+pidin
+uname
 slogger
 sloginfo
-ssh
-sshd
-stty
-top
-tracelogger
-sync
-touch
+slay
+mount
 umount
-uname
 use
-vi
-waitfor
-wc
-which
-
-ksh
+date
+shutdown
+devb-umass
+devb-ram
+chmod
+ln
+rm
+mv
+sleep
+random
+dd
+top
+touch
+netstat
+stty
+qtalk
+nicinfo
+ping
+ifconfig
+dhcp.client
+if_up
+on
 
 ###########################################################################
 ## END OF BUILD SCRIPT

@@ -30,6 +30,7 @@
 //#define I2C_EEPROM_ADDR		0x54
 //#define I2C_EEPROM_CHAN		0x04
 
+/*
 static void i2c_receive_data(xzynq_dev_t *xzynq, int file, _Uint8t addr, _Uint8t* data, int len)
 {
 	int error, i;
@@ -79,6 +80,7 @@ static int i2c_send_data(xzynq_dev_t *xzynq, int file, _Uint8t addr, _Uint8t dat
 
 	return 0;
 }
+*/
 
 void xzynq_read_eeproom_mac_address(xzynq_dev_t *xzynq)
 {
@@ -95,15 +97,14 @@ void xzynq_read_eeproom_mac_address(xzynq_dev_t *xzynq)
 				"devnp: Cannot open /dev/i2c1\n");
 	} else {
 		//No I2C on Zedboard, use hard code instead.
-		/* Select channel for the EEPROM */
+		// Select channel for the EEPROM
 		//i2c_send_data(xzynq, fd, I2C_MUX_ADDR, I2C_EEPROM_CHAN);
 
-		/* Read the MAC address from the EEPROM */
-		//i2c_send_data(xzynq, fd, I2C_EEPROM_ADDR, 0x0); /* Read at address 0x0 */
+		// Read the MAC address from the EEPROM
+		//i2c_send_data(xzynq, fd, I2C_EEPROM_ADDR, 0x0); // Read at address 0x0
 		//i2c_receive_data(xzynq, fd, I2C_EEPROM_ADDR, xzynq->cfg.current_address, 6);
 
-		/* Check the validity */
-		/*
+		// Check the validity
 		sum = 0;
 		for (i = 0; i < 6; i++) {
 			sum += xzynq->cfg.current_address[i];
