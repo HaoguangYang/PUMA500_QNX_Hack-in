@@ -1,0 +1,89 @@
+%% SYSTLC: QNX Neutrino Real-Time Target for TRC\
+%%    TMF: qnx_trc.tmf MAKE: make_rtw EXTMODE: ext_comm 
+%%
+%% $RCSfile: qnx.tlc,v $
+%% $Revision: 1.0 $
+%% $Date: 2004/04/25 22:03:30 $
+%%
+%% Copyright 1994-2002 The MathWorks, Inc.
+%% Abstract: Generic real-time system target file.
+%%
+%selectfile NULL_FILE
+
+%assign MatFileLogging = 1
+
+%assign TargetType = "RT"
+%assign Language   = "C"
+
+%assign GenRTModel = 1
+
+%include "codegenentry.tlc"
+
+
+%% The contents between 'BEGIN_RTW_OPTIONS' and 'END_RTW_OPTIONS' are strictly 
+%% written by the standard format. We need to use this structure in RTW 
+%% options GUI function rtwoptionsdlg.m file.
+%%
+/%
+  BEGIN_RTW_OPTIONS
+
+  % second page of category item
+  rtwoptions(1).prompt         = 'QNX code generation options';
+  rtwoptions(1).type           = 'Category';
+  rtwoptions(1).enable         = 'on';  
+  rtwoptions(1).default        = 4;   % number of items under this category
+                                      % excluding this one.
+  rtwoptions(1).popupstrings  = '';
+  rtwoptions(1).tlcvariable   = '';
+  rtwoptions(1).tooltip       = '';
+  rtwoptions(1).callback      = '';
+  rtwoptions(1).opencallback  = '';
+  rtwoptions(1).closecallback = '';
+  rtwoptions(1).makevariable  = '';
+
+  rtwoptions(2).prompt         = 'MAT-file variable name modifier';
+  rtwoptions(2).type           = 'Popup';
+  rtwoptions(2).default        = 'rt_';
+  rtwoptions(2).popupstrings   = 'rt_|_rt|none';
+  rtwoptions(2).tlcvariable    = 'LogVarNameModifier';
+  rtwoptions(2).tooltip        = ...
+    ['prefix rt_ to variable name,', sprintf('\n'), ...
+    'append _rt to variable name,', sprintf('\n'), ...
+    'or no modification'];
+
+  rtwoptions(3).prompt         = 'External mode';
+  rtwoptions(3).type           = 'Checkbox';
+  rtwoptions(3).default        = 'off';
+  rtwoptions(3).tlcvariable    = 'ExtMode';
+  rtwoptions(3).makevariable   = 'EXT_MODE';
+  rtwoptions(3).tooltip        = ...
+    ['Adds TCP/IP communication support',sprintf('\n'), ...
+    'for use with Simulink external mode'];
+
+  rtwoptions(4).prompt       = 'Ignore custom storage classes';
+  rtwoptions(4).type         = 'Checkbox';
+  rtwoptions(4).default      = 'on';
+  rtwoptions(4).tlcvariable  = 'IgnoreCustomStorageClasses';
+  rtwoptions(4).tooltip      = ['Treat custom storage classes as ''Auto''.'];
+  rtwoptions(4).opencallback = [ ...
+    'objTag = ''Ignore custom storage classes_CheckboxTag'';', ...
+    'obj = findobj(DialogFig,''Tag'',objTag);', ...
+    'set(obj, ''Enable'', sl(''onoff'',ecoderinstalled));'];
+    
+
+  rtwoptions(5).prompt       = 'External mode testing';
+  rtwoptions(5).type         = 'NonUI';
+  rtwoptions(5).default      = '0';
+  rtwoptions(5).tlcvariable  = 'ExtModeTesting';
+  rtwoptions(5).makevariable = 'TMW_EXTMODE_TESTING';
+  rtwoptions(5).tooltip      = ...
+    ['Internal testing flag for Simulink external mode'];
+
+  %----------------------------------------%
+  % Configure RTW code generation settings %
+  %----------------------------------------%
+  
+  rtwgensettings.BuildDirSuffix = '_qnx_trc_rtw';
+  
+  END_RTW_OPTIONS 
+ %/

@@ -1,0 +1,34 @@
+#!/bin/sh
+# script to build a BOOT.bin binary containing the IPL and boot image for ZC702EK. 
+
+echo Generating QNX-IFS...
+cp ifs-xzynq-zc702.raw QNX-IFS
+
+# Removing previous output binary
+if [ -f BOOT.bin ]
+then
+	rm BOOT.bin
+fi
+
+# Copy the ELF build output to current folder
+# Use install/../mkflashimage if it exists; otherwise use prebuilt/../mkflashimage
+if [ -f ../install/armle-v7/boot/sys/ipl-xzynq-zc702 ]
+then
+	cp ../install/armle-v7/boot/sys/ipl-xzynq-zc702 ipl-xzynq-zc702.elf
+else 
+	echo Using prebuilt ipl-xzynq-zc702. Run a make command if you wish to change the ipl.
+	cp ../prebuilt/armle-v7/boot/sys/ipl-xzynq-zc702 ipl-xzynq-zc702.elf
+fi
+
+echo Generating BOOT.bin...
+# Use bootgen to create the BOOT.bin that contains FSBL + IPL
+# Please modify the SDK version (2014.x) to match with the currect version of the tool
+/opt/Xilinx/SDK/2014.1/bin/bootgen -image boot.bif -o i BOOT.bin
+
+# Check that it has been created
+if [ -f BOOT.bin ]
+then
+	echo Binary ready to be copied
+else
+	echo Failed to create boot image
+fi

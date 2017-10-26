@@ -1,0 +1,17 @@
+<!-- Unless otherwise specified, values/attributes are free-form strings -->
+    <!-- type is currently either BSP or SourceOnly -->
+<sourcePackage type="BSP" id="bsp-xilinx-zynq7000-zc702_br-660_be-660">
+    <title>Xilinx Zynq-7000 ZC702</title>
+    <release>latest</release>
+    <maturity>Development Build</maturity>
+    <license>QDL and Apache II</license>
+    <startup>startup-xzynq-zc702</startup> 
+    <description>This package contains the source and build files for targeting QNX/Neutrino on the Xilinx Zynq ZC702 eval kit.</description>
+    <vendor>QNX Software Systems</vendor>
+    <qnxTargetVersion>SDP6.6</qnxTargetVersion>
+    <qnxTargetCPU variant="armle.v7">ARM</qnxTargetCPU>
+    <!-- type is currently only import, will be extended in the future. -->
+    <bsp type="import">
+    	<import id="bsp-xilinx-zynq-zc702">src/hardware/startup/boards/xzynq/zc702/build</import>
+    </bsp>
+</sourcePackage>

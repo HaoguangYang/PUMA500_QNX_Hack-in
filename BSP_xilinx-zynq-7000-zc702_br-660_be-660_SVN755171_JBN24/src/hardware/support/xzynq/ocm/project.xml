@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<module name="ocm-xzynq">
+  <classification>Driver</classification>
+  <description>
+    <short>Xilinx OCM Driver</short>
+    <abstract><![CDATA[
+	                This is the OCM (On Chip Memory) driver for the Xilinx BSP.
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="xzynq" generated="true">
+      <location basedir="arm/le">ocm-xzynq</location>
+    </component>
+  </contents>
+</module>

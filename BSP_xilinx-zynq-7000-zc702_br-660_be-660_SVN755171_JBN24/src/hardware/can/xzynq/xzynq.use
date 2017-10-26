@@ -1,0 +1,33 @@
+%C - CAN driver for Zynq CAN Controller
+
+%C [options] ["can#"[,port[,mem[,sysirq]]]] ["xzynqcan#"]
+
+where '#' is '1' or '2'
+
+can#   is option used for Zynq CAN command line configuration:
+port   is CAN registers base address
+sysirq is CAN system interrupt
+
+xzynqcan# defines defaults for Xilinx Zynq board
+
+Options:
+ -a                       Enable autobus (default OFF)
+ -b string                Predefined bitrate (5K, 10K, 20K, 25K, 50K, 100K, 125K, 500K, 1M, default 125K)
+ -B brp,tseg1,tseg2,sjw   Manually define bitrate
+ -c number                Define clockrate (default 12000000, i.e. 12Mhz)
+ -c string                Predefined clockrate (12M, 24M, or 48M, default 24M)
+ -D                       Disable mini-driver init if it is present and running (default enabled) 
+ -i midrx[,midtx]         Starting receive and transmit message ID (default 0x100C0000)
+ -l number                CAN message data size (0 - 8 bytes, default 8) 
+ -m number                Initial local timestamp (not supported) 
+ -M                       Store full receive message info (i.e. message ID, timestamp, etc.) 
+ -n number                Size of each device mailbox message buffer (default 64)
+ -o                       Transmit/Receive data LSB (default MSB)
+ -p                       PHY reset pin if needed (default none)
+ -r number                Number of receive (RX) mailboxes, TX = 5 - RX (default 4) 
+ -S                       Sort mdriver message based on MID (default all stored in first device) 
+ -t                       Enable self-test loopback mode (default disabled) 
+ -T                       Enable snoop mode (default disabled) 
+ -u number                CAN unit number (default 1) 
+ -x                       Enable extended 29 bit CAN message ID (default standard 11 bit MID) 
+

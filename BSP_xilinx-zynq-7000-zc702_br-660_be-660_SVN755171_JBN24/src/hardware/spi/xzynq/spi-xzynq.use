@@ -1,0 +1,18 @@
+%C Driver for Xilinx Zynq-7000 SPI controllers
+
+Syntax:
+    spi-master -d xzynq [option[,option ...]] ... &
+
+Options (to override autodetected defaults):
+
+    "base",         /* Base address for this CSPI controller */
+    "bitrate",      /* defines teh bitrate to to assigned to the spi */
+    "clock",        /* defined the value of the clock source of the SPI */
+    "channel",      /* defines the connected channel number (1,2,3, or 4) */
+    "irq",          /* IRQ for this CSPI intereface */
+    "force",        /* Force the default CSx level */
+    "num_cs"        /* number of support devices on this controller (default=1)*/
+    "cs_delay"      /* Number of clock cycle from CS to data delay, 0:no delay , 1-255:# clock cycles */  
+Examples:
+    # Start SPI driver with base address, IRQ and waitstates....
+    spi-master -d xzynq base=0xE0006000

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<module name="clock-xzynq">
+  <classification>Driver</classification>
+  <description>
+    <short>Xilinx Zynq clock Driver</short>
+    <abstract><![CDATA[
+	                The clock driver for the Xilinx BSP.
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="xzynq" generated="true">
+      <location basedir="arm/le">clock-xzynq</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="false" location="lib/clock"/>
+  </requires>
+</module>

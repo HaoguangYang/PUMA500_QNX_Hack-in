@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<module name="devnp-xzynq">
+  <classification>Driver</classification>
+  <description>
+    <short>Driver for XZYNQ (GEM) Ethernet controllers</short>
+    <abstract><![CDATA[
+                        The devnp-xzynq.so driver controls XZYNQ GEM Ethernet adapters.
+                ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="xzynq" generated="true">
+      <location basedir="arm/dll.le">devnp-xzynq.so</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="true" location="lib/drvr"/>
+  </requires>
+</module>

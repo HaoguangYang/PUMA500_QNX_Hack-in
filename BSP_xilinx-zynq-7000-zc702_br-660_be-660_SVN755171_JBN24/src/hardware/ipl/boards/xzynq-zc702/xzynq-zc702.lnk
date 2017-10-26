@@ -1,0 +1,37 @@
+TARGET(elf32-littlearm)
+OUTPUT_FORMAT(elf32-littlearm)
+ENTRY(_start)
+MEMORY
+{
+	stack 	:	ORIGIN = 0x00C00000,	LENGTH = 0x4000
+	code	:	ORIGIN = 0x00900000,	LENGTH = 0x80000
+	data	:	ORIGIN = 0x00980000,	LENGTH = 0x80000
+}
+
+SECTIONS
+{
+	/* Convenient variable for the start.S */
+	__stack_ptr = 0x00C00000;
+
+	.text : {
+			*(.text)
+            *(.note.gnu.build-id)
+			*(.rodata*)
+		} > code
+
+    . = ALIGN(4);
+	_etext = .;
+
+	.data : {
+			*(.data)
+			*(.sdata)
+		} > data
+
+    . = ALIGN(4);
+	_ecopy = .;
+
+	.bss  : {
+			*(.bss)
+			*(.sbss)
+		} > data
+}

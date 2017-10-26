@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<module name="devf-norqspi">
+  <classification>Driver</classification>
+  <description>
+    <short> Flash filesystem support for QSPI-based NOR chips</short>
+    <abstract><![CDATA[
+			The devf-norqspi manager provides flash filesystem support for the QSPI-based NOR flash.
+		]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <os name="nto">
+        <cpu isa="ppc">
+          <byteOrder>be</byteOrder>
+          <byteOrder>be.spe</byteOrder>
+        </cpu>
+        <cpu isa="sh">
+          <byteOrder>le</byteOrder>
+        </cpu>
+        <cpu isa="arm">
+          <byteOrder>le</byteOrder>
+          <byteOrder>le.v7</byteOrder>
+        </cpu>
+        <cpu isa="x86"/>
+        <cpu isa="mips">
+          <byteOrder>le</byteOrder>
+          <byteOrder>be</byteOrder>
+        </cpu>
+      </os>
+    </availability>
+    <availability supported="false">
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="norqspi" generated="true">
+      <location basedir="ppc/be">devf-norqspi</location>
+      <location basedir="ppc/be.spe">devf-norqspi</location>
+      <location basedir="sh/le">devf-norqspi</location>
+      <location basedir="arm/le.v7">devf-norqspi</location>
+      <location basedir="x86/o">devf-norqspi</location>
+      <location basedir="mips/le">devf-norqspi</location>
+      <location basedir="mips/be">devf-norqspi</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="true" location="lib/drvr"/>
+    <part rootMacro="MTDFLASH_ROOT" build="true" location="hardware/flash/mtd-flash"/>
+  </requires>
+</module>

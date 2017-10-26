@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<module name="gpio-xzynq">
+	<type>Element</type>
+	<classification>SDK</classification>
+
+	<description>
+	        <short>GPIO XZYNQ library</short>
+	        <abstract>
+	                <![CDATA[The gpio-xzynq library operates the GPIO Controller, and is needed by certain device drivers to perform GPIO changement.]]>
+	        </abstract>
+	</description>
+
+	<supports>
+       		 <availability>
+	          <cpu isa="arm">
+                       <byteOrder>le</byteOrder>
+	           </cpu>
+	        </availability>
+	</supports>
+
+	<source available="false">
+		<location type="">.</location>
+	</source>
+
+	<contents>
+		<component id="SharedObj" generated="true">
+		        <location basedir="{cpu}/so{.:endian}" runtime="true">
+		                libgpio-xzynq.so
+		        </location>
+		</component>
+		<component id="SharedArchive" generated="true">
+		<kind type="library"/>
+		        <location basedir="{cpu}/so{.:endian}" runtime="false">
+		                libgpio-xzynqS.a
+		        </location>
+		</component>
+	</contents>
+</module>

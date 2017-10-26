@@ -1,0 +1,6 @@
+the_ROM_image:
+{
+	[bootloader]/Users/pabbaraj-admin/Downloads/zedboard_oob_design/sw/zynq_fsbl/Debug/zynq_fsbl.elf
+	/Users/pabbaraj-admin/Downloads/zedboard_oob_design/boot_image/system.bit
+	/Users/pabbaraj-admin/Downloads/zedboard_oob_design/boot_image/u-boot.elf
+}

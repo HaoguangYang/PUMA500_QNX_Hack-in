@@ -1,0 +1,10 @@
+%C Watchdog Timer Module for Zynq 7000
+
+Syntax:
+	wdt [options] 
+Options:
+ -a addr  WDOG register physics based address  
+ -l len     WDOG registers size
+ -p priority  	Define priority of the Watchdog Timer Module event. (default: 10).
+ -t time  	Set kick time 
+ -e		Terminate the Watchdog Time Module

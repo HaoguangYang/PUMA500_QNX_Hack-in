@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<module name="fpga-xzynq">
+	<type>Element</type>
+	<classification>Driver</classification>
+
+	<description>
+            <short>Xilinx Zynq FPGA Driver</short>
+	        <abstract>
+	                <![CDATA[The FPGA driver for the Xilinx BSP.]]>
+	        </abstract>
+	</description>
+
+	<supports>
+		<availability>
+			<cpu isa="arm">
+			<byteOrder>le</byteOrder>
+			</cpu>
+		</availability>
+	</supports>
+
+	<source available="false">
+		<location type="">.</location>
+	</source>
+	<GroupOwner>hw</GroupOwner>
+
+	<contents>
+		<component id="xzynq" generated="true">
+			<location basedir="{cpu}/{endian}"
+				 runtime="true">fpga-xzynq</location>
+		</component>
+	</contents>
+
+	<requires>
+		<part build="false" location="hardware/support/xzynq/fpga"/>
+	</requires>
+
+</module>

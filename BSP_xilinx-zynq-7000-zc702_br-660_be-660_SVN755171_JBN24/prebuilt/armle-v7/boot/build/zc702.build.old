@@ -1,0 +1,513 @@
+###################################################################################
+#
+# Neutrino trunk on the Xilinx Zynq ZC702 Board, based on ARM Cortex A9-MPCore Platform
+#
+####################################################################################
+#
+# On-board devices:
+# ----------------
+#
+# device:   Zynq UART2
+#       devc-serxzynq -e -F -S -c50000000 0xE0001000,82
+#
+# device:   Zynq I2C
+#       i2c-xzynq -p 0xE0004000 -i 57 --u 1
+#       i2c-xzynq -p 0xE0005000 -i 80 --u 2
+#
+# device:   Zynq USDHC controller
+#       devb-mmcsd-xzynq mmcsd verbose=1
+#
+# device:   Zynq USB Host
+#       io-usb -d ehci-xzynq ioport=0xe0002100,irq=53
+#
+# device:   Zynq USB Device
+#       io-usb-dcd -dusbumass-xzynq ioport=0xe0002000,irq=53,verbose=3
+#
+# device:   QSPI Flash Chip
+#       devf-qspi-xzynq-zc702
+#
+# device:   Watchdog Timer
+#       wdtkick
+#
+# device:   Zynq XADC
+#       xadc-xzynq
+#
+# device:   Zynq FPGA
+#       fpga-xzynq
+#
+# device:   Zynq OCM
+#       ocm-xzynq
+#
+# device:   RTC
+#       rtc hw  or  rtc -s hw
+#
+# device:   Zynq CAN
+#       dev-can-xzynq -p9 xzynqcan1
+#
+############################################################################
+[image=0x00100000]
+[virtual=armle-v7,raw +compress] .bootstrap = {
+	# Watchdog can be enabled using '-W' startup option
+	startup-xzynq-zc702 -v
+	# '-ae' startup option allows for unaligned memory accesses
+	PATH=/proc/boot procnto-smp-instr -ae
+}
+[+script] .script = {
+    # Initialise the console
+    procmgr_symlink ../../proc/boot/libc.so.3 /usr/lib/ldqnx.so.2
+    
+    #######################################################################
+    ## Clock driver
+    #######################################################################
+    display_msg Starting Clock driver (/dev/clock)...
+    clock-xzynq
+    
+    #######################################################################
+    ## Serial driver
+    #######################################################################
+    devc-serxzynq -e -F -S 0xE0001000,82
+
+    reopen
+    display_msg Welcome to QNX Neutrino 6.6.0 on the Zynq7000 ZC702 (ARM Cortex-A9 MPCore)
+    slogger &
+
+    # Start some common servers
+    pipe &
+
+    #######################################################################
+    ## WatchDog utility
+    ## If startup is given '-W' parameter then the 'wdtkick' utility MUST
+    ## be uncommented below.
+    #######################################################################
+#    display_msg Starting Watchdog daemon...
+#    wdtkick
+
+    #######################################################################
+    ## I2C driver
+    #######################################################################
+    display_msg Starting I2C1 and I2C2 driver (/dev/i2c1,2)...
+    i2c-xzynq -p 0xE0004000 -i 57 --u 1
+    i2c-xzynq -p 0xE0005000 -i 80 --u 2
+
+    #######################################################################
+    ## SD memory card driver
+    #######################################################################
+    display_msg Starting SDHC driver (/dev/hd0)...
+    devb-mmcsd-xzynq mmcsd verbose=1
+
+    #######################################################################
+    ## QSPI Flash Chip
+    ## The first use requires the flash to be erased and formatted:
+    ## flashctl -p /dev/fs0p0 -o 0x800000 -e -f
+    #######################################################################
+    display_msg Starting QSPI Flash memory (/dev/fs0p0)...
+    devf-qspi-xzynq-zc702
+    waitfor /dev/fs0p0
+
+    #######################################################################
+    ## CAN
+    #######################################################################
+    display_msg Starting CAN driver (/dev/can1/)...
+    dev-can-xzynq -p9 xzynqcan1
+
+    #######################################################################
+    ## OCM
+    #######################################################################
+    display_msg Starting OCM driver (/dev/ocm/)...
+    ocm-xzynq
+
+    #######################################################################
+    ## XADC driver
+    #######################################################################
+    display_msg Starting XADC driver (/dev/xadc)...
+    xadc-xzynq
+
+    #######################################################################
+    ## FPGA driver
+    #######################################################################
+    display_msg Starting FPGA driver (/dev/fpga)...
+    fpga-xzynq
+
+    #######################################################################
+    ## SPI driver - not started by default, no SPI devices on board
+    #######################################################################
+    #display_msg Starting SPI0 and SPI1
+    #spi-master -u 0 -d xzynq base=0xE0006000,irq=58
+    #spi-master -u 1 -d xzynq base=0xE0007000,irq=81
+    #waitfor /dev/spi0
+
+    #######################################################################
+    ## USB Host
+    #######################################################################
+    display_msg Starting USB Host driver (/dev/io-usb/)...
+    io-usb -d ehci-xzynq ioport=0xe0002100,irq=53
+    waitfor /dev/io-usb
+
+    #######################################################################
+    ## USB Device
+    #######################################################################
+    # display_msg Starting USB Device driver (/dev/io-usb-dcd/)...
+    # io-usb-dcd -dusbumass-xzynq-ci ioport=0xe0002000,irq=53,linkup
+    # waitfor /dev/io-usb-dcd
+
+    #######################################################################
+    ## Networking
+    #######################################################################
+    display_msg Starting Network driver...
+    io-pkt-v4-hc -dxzynq -ptcpip stacksize=8192
+    waitfor /dev/socket
+    #if_up -p -a xzynq0
+    #ifconfig xzynq0 10.1.1.2/8
+    ## or
+    display_msg Getting network address with DHCP...
+    if_up -p -a xzynq0
+    dhcp.client -i xzynq0
+
+    #######################################################################
+    ## REMOTE_DEBUG (gdb or Momentics)
+    ##  - refer to the help documentation for the gdb, qconn and the IDE
+    ##    for more information on remote debugging
+    ##  - the commands shown require that NETWORK is enabled too
+    #######################################################################
+    devc-pty
+    waitfor /dev/ptyp0 4
+    waitfor /dev/socket 4
+    PATH=$PATH:/usr/bin qconn port=8000
+
+    # Start inetd for telnet access
+    inetd
+
+    # Start the main shell
+    SYSNAME=nto
+    TERM=qansi
+    HOME=/
+    PATH=:/bin:/usr/bin:/sbin:/usr/sbin:/proc/boot
+    LD_LIBRARY_PATH=:/lib:/usr/lib:/lib/dll:/proc/boot
+    [+session] ksh &
+}
+
+# Redirect console messages
+[type=link] /bin/sh=/proc/boot/ksh
+[type=link] /dev/console=/dev/ser1
+[type=link] /tmp=/dev/shmem
+
+# Programs require the runtime linker (ldqnx.so) to be at a fixed location
+
+# Shared libraries
+libc.so
+libm.so.2
+libc.so.3
+libz.so.2
+libtracelog.so.1
+
+###########################################################################
+## uncomment for USB HOST driver
+###########################################################################
+devu-ehci-xzynq.so
+libusbdi.so
+devh-usb.so
+libhiddi.so
+
+###########################################################################
+## uncomment for USB DEVICE driver
+###########################################################################
+# devu-usbumass-xzynq-ci.so
+# libusbdci.so
+
+###########################################################################
+## PMM
+###########################################################################
+# libpmm-xzynq.so
+
+###########################################################################
+## GPIO
+###########################################################################
+libgpio-xzynq.so
+
+###########################################################################
+## SPI
+###########################################################################
+spi-xzynq.so
+
+###########################################################################
+## DMA
+###########################################################################
+# libdma-xzynq.so
+
+###########################################################################
+## uncomment for BLOCK driver
+## substitute cam-xxx.so and fs-xxx.so with the cam drivers and filesystems
+## required
+###########################################################################
+libcam.so
+io-blk.so
+cam-disk.so
+fs-qnx6.so
+fs-qnx4.so
+fs-dos.so
+fs-udf.so
+fs-cd.so
+fs-cifs
+fs-nfs3
+
+###########################################################################
+## uncomment for NETWORK driver
+###########################################################################
+libsocket.so
+[perms=+r,+x] devnp-xzynq.so
+
+# Executables
+[data=c dperms=0755]
+
+###########################################################################
+## uncomment for NETWORK driver
+###########################################################################
+io-pkt-v4-hc
+
+###########################################################################
+## uncomment for CAN driver
+###########################################################################
+dev-can-xzynq
+[perms=+x] canctl
+
+#######################################################################
+## uncomment for RTC utility
+#######################################################################
+rtc
+
+###########################################################################
+## uncomment for REMOTE_DEBUG
+###########################################################################
+devc-pty
+qconn
+/usr/bin/pdebug=pdebug
+
+###########################################################################
+## uncomment for Block driver
+###########################################################################
+fdisk
+mkdosfs
+devb-mmcsd-xzynq
+
+###########################################################################
+## SPI Flash driver
+## SPI Flash chip can be formatted like so: flashctl -p /dev/fs0p0 -e -f -m
+## After formatting a partition will appear in /fs0p0
+###########################################################################
+flashctl
+
+###########################################################################
+## uncomment for SPI driver
+###########################################################################
+spi-master
+
+###########################################################################
+## uncomment for QSPI flash
+###########################################################################
+devf-qspi-xzynq-zc702
+
+###########################################################################
+## I2C driver
+###########################################################################
+i2c-xzynq
+
+###########################################################################
+## XADC
+###########################################################################
+xadc-xzynq
+
+###########################################################################
+## FPGA
+###########################################################################
+fpga-xzynq
+
+###########################################################################
+## uncomment for disk drivers (filesystems support)
+###########################################################################
+/sbin/fdisk=fdisk
+/sbin/mkdosfs=mkdosfs
+/sbin/mkqnx6fs=mkqnx6fs
+/sbin/chkdosfs=chkdosfs
+/sbin/chkqnx6fs=chkqnx6fs
+/sbin/chkfsys=chkfsys
+/usr/bin/fsysinfo=fsysinfo
+
+###########################################################################
+## uncomment for USB HOST driver
+###########################################################################
+io-usb
+usb
+devu-mouse
+devu-kbd
+
+###########################################################################
+## uncomment for USB DEVICE driver
+###########################################################################
+# [perms=+x] io-usb-dcd
+# [perms=+x] devu-umass_client-block
+
+###########################################################################
+## uncomment for Serial driver
+###########################################################################
+devc-serxzynq
+
+###########################################################################
+## uncomment for WatchDog utility
+###########################################################################
+wdtkick
+
+###########################################################################
+## uncomment for OCM driver
+###########################################################################
+ocm-xzynq
+
+###########################################################################
+## uncomment for Clock driver
+###########################################################################
+clock-xzynq
+
+###########################################################################
+## uncomment to install terminfo packages on the board
+###########################################################################
+# /usr/share/terminfo/x/xterm=../prebuilt/usr/share/terminfo/x/xterm
+
+###########################################################################
+## shell configuration
+###########################################################################
+# /etc/profile=../prebuilt/etc/profile
+
+###########################################################################
+## uncomment for required network clients and services
+###########################################################################
+ftp
+inetd
+/usr/sbin/telnetd=telnetd
+/usr/sbin/ftpd=ftpd
+/bin/login=login
+
+/etc/inetd.conf={
+#
+# Configuration file for inetd.
+#
+# To re-configure the running inetd process, edit this file, then
+# send the inetd process a SIGHUP.
+#
+#
+# Internet services syntax:
+#  <service_name> <socket_type> <proto> <flags> <user> <server_pathname> <args>
+#
+
+telnet     stream tcp nowait root  /usr/sbin/telnetd        in.telnetd
+ftp        stream tcp nowait root  /usr/sbin/ftpd           in.ftpd -l
+
+# IPv6 services.
+# The only difference with the above is "tcp6" instead of "tcp".
+# Be sure to enable both "tcp" and "tcp6" when you need service for
+# both IPv4/v6.
+#
+#telnet          stream  tcp6    nowait  root    /usr/sbin/telnetd    telnetd
+}
+
+/etc/passwd={
+root::0:0:Superuser:/:/bin/sh
+ftp:x:14:80:FTP User:/tmp:
+}
+
+/etc/ftpusers={
+# list of users disallowed any ftp access.
+# read by ftpd(8).
+}
+
+/etc/ftpd.conf={
+checkportcmd all
+classtype chroot CHROOT
+classtype guest GUEST
+classtype real REAL
+display none
+limit all -1 # unlimited connections
+maxtimeout all 7200 # 2 hours
+modify all
+motd all motd
+notify none
+passive all
+timeout all 900 # 15 minutes
+umask all 027
+upload all
+modify guest off
+umask guest 0707
+}
+
+/etc/services=${QNX_TARGET}/etc/services
+
+###########################################################################
+## general commands
+###########################################################################
+cp
+ls
+cat
+ksh
+pipe
+pidin
+uname
+slogger
+sloginfo
+slay
+mount
+umount
+use
+date
+shutdown
+devb-umass
+devb-ram
+chmod
+ln
+rm
+mv
+sleep
+random
+dd
+top
+touch
+netstat
+stty
+qtalk
+nicinfo
+ping
+ifconfig
+dhcp.client
+if_up
+on
+
+###########################################################################
+## END OF BUILD SCRIPT
+###########################################################################
+
+###########################################################################
+##
+## INTERRUPT MAP (Zynq)
+##
+###########################################################################
+##
+## vector: 0 - 31
+## device: reserved
+##
+## vector 32 - 158
+## device: same IRQs as defined in TRM
+##
+## vector 159
+## device: reserved
+##
+## GPIO interrupts are cascaded.  Individual GPIO IRQs are defined below
+## vector 256 - 287
+## device: GPIO1[1 - 31]
+##
+## Only 22 bits for the GPIO2
+## vector 288 - 309
+## device: GPIO2[1 - 21]
+##
+## vector 320 - 351
+## device: GPIO3[1 - 31]
+##
+## vector 352 - 383
+## device: GPIO4[1 - 31]
+###########################################################################

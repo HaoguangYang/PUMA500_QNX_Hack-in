@@ -1,0 +1,758 @@
+*************************************************
+    General CAN Operation & Loopback Testing
+*************************************************
+
+1. Start CAN driver in loopback mode
+
+# dev-can-xzynq -t xzynqcan1
+
+# ls /dev/can1
+rx0    rx1    rx2    rx3    tx4
+
+In this mode, the transmitter and receiver of the CAN device are looped back.
+The message ID's (MID's) of the transmit and receive device mailboxes are
+configured by default such that:
+
+Device Mailbox  MID
+============================
+RX0/TX4		0x100C0000
+RX1			0x101C0000
+RX2			0x102C0000
+RX3			0x103C0000
+
+By default, every frame sent by TX4 will only be received by RX0.
+
+2. Run a client application to read CAN messages on the first receive mailbox
+
+# cat /dev/can1/rx0 &
+
+3. Transmit a CAN message to the first recieve device mailbox
+
+# echo testing > /dev/can1/tx4
+testing
+
+NOTE: RX0 and TX4 are configured with the same message ID (MID).
+
+4. Data must be EXACTLY 8 bytes - if it is larger or smaller, no
+CAN message is transmitted (an error is returned from the write() fuction)
+
+# echo test > /dev/can1/tx4
+# echo testimony > /dev/can1/tx4
+
+No data is transmitted/received.
+
+5. Transmit CAN messages to the second receive device mailbox
+
+# canctl -u1,tx4 -m 0x101c0000
+# echo tstdat1 > /dev/can1/tx4
+# echo tstdat2 > /dev/can1/tx4
+# echo tstdat3 > /dev/can1/tx4
+# echo tstdat4 > /dev/can1/tx4
+
+NOTE: No data is displayed since there is no client reading from the device
+
+6. Run a client application to read CAN messages on the second receive device mailbox
+
+# cat /dev/can1/rx1 &
+
+tstdat1
+tstdat2
+tstdat3
+tstdat4
+
+NOTE: Data previously received by the device is printed to the console.
+
+7. Run a client application to read CAN messages on the last receive device mailbox
+
+# cat /dev/can1/rx3 &
+
+8. Transmit CAN messages to the last receive device mailbox
+
+# canctl -u1,tx4 -m 0x103c0000
+# echo testing > /dev/can1/tx4
+
+testing
+
+9. Attempt to write to a receive device mailbox
+
+# echo testing > /dev/can1/rx3
+
+Nothing happens and write() function returns with an error.
+
+10. Attempt to read from transmit device mailbox
+
+# cat /dev/can1/tx4
+
+/dev/can1/tx4: Not supported
+
+11. Run a stress test on the device
+
+# while true
+> do
+> echo testing > /dev/can1/tx4
+> done
+
+testing
+testing
+testing
+.
+.
+.
+testing
+testing
+testing
+
+<ctrl+c> to stop
+
+12. Restart driver with different number of RX/TX devices
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t -r 2 xzynqcan1
+# ls /dev/can1
+rx0    rx1    tx2
+
+There are now only 2 receive devices and 1 transmit device.  The
+default MID's change to:
+
+Device Mailbox  MID
+============================
+RX0/TX2		0x100C0000
+RX1			0x101C0000
+
+13. Run a client application to read CAN messages on RX1
+
+cat /dev/can1/rx1 &
+  
+14. Transmit a CAN message to RX1
+
+# canctl -u1,tx2 -m 0x101c0000
+# echo testing > /dev/can1/tx2
+
+testing
+
+15. Run a client application to read CAN messages on RX0
+
+cat /dev/can1/rx0 &
+
+16. Transmit a CAN message to RX0 from the transmit device with the matching MID
+
+# canctl -u1,tx2 -m 0x100c0000
+# echo testing > /dev/can1/tx2
+testing
+
+17. Transmit a CAN message from a TX without an accompanying RX mailbox
+
+# canctl -u1,tx2 -m 0x111c0000
+# echo testing > /dev/can1/tx2
+
+18. Restart the driver with a different CAN message data size
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t -l 4 xzynqcan1
+
+The CAN message data payload is now only 4 bytes instead of the default 8 bytes.
+
+19. Run a client application to read CAN messages on RX0
+
+# cat /dev/can1/rx0 &
+
+20. Only messages of 4 bytes are now acceptable
+
+# echo testing > /dev/can1/tx4
+(no data transmitted/received)
+
+# echo abc > /dev/can1/tx4 
+abc
+
+# echo -n abcd > /dev/can1/tx4
+abcd
+
+21. Restart CAN driver custom unit number
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t -u5 xzynqcan1
+
+# ls /dev/can5
+rx0    rx1    rx2    rx3    tx4
+
+22. Confirm TX/RX continues to work
+
+# cat /dev/can5/rx0 &
+# echo testing > /dev/can5/tx4
+testing
+
+
+23. Driver defaults are pre-defined for the Zynq ZC702 board, i.e.
+
+dev-can-xzynq -t xzynqcan1
+
+starts the driver with the proper port and IRQ's for the Zynq ZC702 board.
+
+Note that the "can1" options are also defaults for the Zynq ZC702 board, i.e.
+
+dev-can-xzynq -t can1
+
+is equivalent to
+
+dev-can-xzynq -t xzynqcan1
+
+24. The driver IRQ's can be overriden if the driver is run on a different board, i.e.
+
+dev-can-xzynq -t can1,port,mem,sysirq
+
+
+*************************************************
+    Extended Driver Features & canctl utility
+*************************************************
+The canctl utility provides a commandline mechanism to send devctl's to the CAN
+driver to take advantage of various driver features.
+
+1. Start the CAN driver in selftest mode
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t can1
+
+2. Get the use message for the canctl utility
+
+# canctl -h
+Utility to send devctl's to a CAN device
+usage: canctl -u#[,rx#][,tx#] [options]
+
+Options:
+-d                print debug info
+-e                print error info
+-f 0x########     set message filter
+-F                get message filter
+-h                print use message
+-m 0x########     set message ID
+-M                get message ID
+-p 0x########     set tx message priority
+-P                get tx message priority
+-r                read extended CAN message
+-t 0x########     set timestamp
+-T                get timestamp
+-u #[,rx#][,tx#]  CAN device to operate on (default /dev/can1/rx0)
+
+3. Send a DEBUG devctl to the driver
+
+# canctl -u1 -d
+
+Debug output is driver define.  In the case of dev-can-xzynq, the driver 
+prints all of its register and mailbox values.
+
+CAN REG
+
+**********************************************************************************
+XZYNQ_CAN_SRR_OFFSET = 0x00000002
+XZYNQ_CAN_MSR_OFFSET = 00000000
+XZYNQ_CAN_BRPR_OFFSET = 0x000000c7
+XZYNQ_CAN_BTR_OFFSET = 0x00000001
+XZYNQ_CAN_ECR_OFFSET = 00000000
+XZYNQ_CAN_ESR_OFFSET = 00000000
+XZYNQ_CAN_SR_OFFSET = 0x00000098
+XZYNQ_CAN_ISR_OFFSET = 0x00006000
+XZYNQ_CAN_IER_OFFSET = 0x00000f7d
+XZYNQ_CAN_TCR_OFFSET = 00000000
+XZYNQ_CAN_WIR_OFFSET = 0x00003f3f
+XZYNQ_CAN_AFR_OFFSET = 0x0000000f
+XZYNQ_CAN_AFMR1_OFFSET = 0xffe00000
+XZYNQ_CAN_AFIR1_OFFSET = 0x80600000
+XZYNQ_CAN_AFMR2_OFFSET = 0xffe00000
+XZYNQ_CAN_AFIR2_OFFSET = 0x80e00000
+XZYNQ_CAN_AFMR3_OFFSET = 0xffe00000
+XZYNQ_CAN_AFIR3_OFFSET = 0x81600000
+XZYNQ_CAN_AFMR4_OFFSET = 0xffe00000
+XZYNQ_CAN_AFIR4_OFFSET = 0x81e00000
+**********************************************************************************
+
+Mailboxes
+RX Mailboxes
+MB      ID              MASK            DLC     MDL             MDH
+==================================================================================
+RX0     0x100c0000      0x1ffc0000      8       0x00000000      0x00000000
+RX1     0x101c0000      0x1ffc0000      8       0x00000000      0x00000000
+RX2     0x102c0000      0x1ffc0000      8       0x00000000      0x00000000
+RX3     0x103c0000      0x1ffc0000      8       0x00000000      0x00000000
+
+TX Mailboxes
+MB      ID              MASK            DLC     MDL             MDH
+==================================================================================
+TX4     0x100c0000      0x00000000      8       0x00000000      0x00000000
+
+Where
+
+MB - mailbox name
+ID - mailbox message ID
+MASK - filtering mask (0 = filter off)
+DLC - data length
+MDL - message data low word
+MDH - message data high word
+
+4. Obtain the message ID (MID) for a given device
+
+# canctl -u1,rx0 -M
+GET_MID = 0x100C0000
+# canctl -u1,rx2 -M
+GET_MID = 0x102C0000
+# canctl -u1,tx4 -M
+GET_MID = 0x100C0000 
+
+5. Set a new MID for a TX and a RX device
+
+# canctl -u1,rx2 -m0x11CC0000
+# canctl -u1,tx4 -m0x11CC0000
+
+6. Verify the new MID's
+
+# canctl -u1,rx2 -M
+GET_MID = 0x11CC0000
+# canctl -u1,tx4 -M
+GET_MID = 0x11CC0000
+
+NOTE: "canctl -u1 -d" could also be used for debug purposes
+
+7. Verify TX and RX devices can communicate using the new MID
+
+# echo testing > /dev/can1/tx4
+# cat /dev/can1/rx2
+testing
+<ctrl+c>
+
+8. Restart driver with different starting MID values
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t -i 0x1A0C0000,0x1A0C0000 can1
+
+9. Read non-default MID values
+
+# canctl -u1,rx0 -M
+GET_MID = 0x1A0C0000
+# canctl -u1,rx1 -M
+GET_MID = 0x1A1C0000
+# canctl -u1,tx4 -M
+GET_MID = 0x1A0C0000
+
+NOTE: "canctl -u1 -d" could also be used for debug purposes
+
+10. Verify TX/RX still work with new MID's
+
+# echo testing > /dev/can1/tx4
+# cat /dev/can1/rx0
+testing
+<ctrl+c>
+
+
+*************************************************
+    Extended MID's
+*************************************************
+Standard 11 bit MID's - bits 18-28 define the MID
+Extended 29 bit MID's - bits  0-28 define the MID
+First, verify that extended MID's are disabled in the default configuration.
+Then, restart the driver with extended MID's and verify operation.
+
+1. Start the CAN driver with its default MID's
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t can1
+
+2. Set invalide extended MID's for two RX devices and one TX device
+
+# canctl -u1,rx3 -m0x100c0002
+# canctl -u1,rx0 -m0x100c0001
+# canctl -u1,tx4 -m0x100c0002
+
+3. Transmit a CAN message from the TX device with the invalid extended MID
+
+# echo testing > /dev/can1/tx4
+
+4. Determine which device received the CAN message
+
+# cat /dev/can1/rx3
+<ctrl+c>
+
+# cat /dev/can1/rx2
+testing
+<ctrl+c>
+
+RX5 received the CAN message even though its MID does not match that of TX4.
+Because the extended MID's are ignored, the device hardware treats RX2 and RX3
+as having the the same MID (the lower 18 bits are ignored) and the message is 
+filtered to the highest priority device. (Among the message interrupts, the 
+message object's interrupt priority decreases with increasing message number,
+ie RX0 has a higher priority than RX1..RX2, etc.)
+
+Extended Frame: MID[28:0 ] 29-bit identifier
+Standard Frame: MID[28:18] 11-bit identifier
+
+5. Restart the device with the extended MID option
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t -x can1
+
+6. Set valid extended MID's for two RX devices and one TX device
+
+# canctl -u1,rx3 -m0x100c0002
+# canctl -u1,rx2 -m0x100c0001
+# canctl -u1,tx4 -m0x100c0002
+
+7. Send a DEBUG devctl to the driver to show the MID's. 
+
+# canctl -u1 -d
+
+CAN REG
+
+**********************************************************************************
+XZYNQ_CAN_SRR_OFFSET = 0x00000002
+XZYNQ_CAN_MSR_OFFSET = 0x00000002
+XZYNQ_CAN_BRPR_OFFSET = 0x000000c7
+XZYNQ_CAN_BTR_OFFSET = 0x00000001
+XZYNQ_CAN_ECR_OFFSET = 00000000
+XZYNQ_CAN_ESR_OFFSET = 00000000
+XZYNQ_CAN_SR_OFFSET = 0x00000092
+XZYNQ_CAN_ISR_OFFSET = 0x00006080
+XZYNQ_CAN_IER_OFFSET = 0x00000f7f
+XZYNQ_CAN_TCR_OFFSET = 00000000
+XZYNQ_CAN_WIR_OFFSET = 0x00000101
+XZYNQ_CAN_AFR_OFFSET = 0x0000000f
+XZYNQ_CAN_AFMR1_OFFSET = 0xffe7fffe
+XZYNQ_CAN_AFIR1_OFFSET = 0x80680000
+XZYNQ_CAN_AFMR2_OFFSET = 0xffe7fffe
+XZYNQ_CAN_AFIR2_OFFSET = 0x80e80000
+XZYNQ_CAN_AFMR3_OFFSET = 0xffe7fffe
+XZYNQ_CAN_AFIR3_OFFSET = 0x81680000
+XZYNQ_CAN_AFMR4_OFFSET = 0xffe7fffe
+XZYNQ_CAN_AFIR4_OFFSET = 0x81e80000
+**********************************************************************************
+
+Mailboxes
+RX Mailboxes
+MB      ID              MASK            DLC     MDL             MDH
+==================================================================================
+RX0     0x100c0000      0x1fffffff      8       0x74657374      0x696e670a
+RX1     0x101c0000      0x1fffffff      8       0x00000000      0x00000000
+RX2     0x100c0001      0x1fffffff      8       0x00000000      0x00000000
+RX3     0x100c0002      0x1fffffff      8       0x74657374      0x696e670a
+
+TX Mailboxes
+MB      ID              MASK            DLC     MDL             MDH
+==================================================================================
+TX4     0x100c0002      0x00000000      8       0x74657374      0x696e670a
+
+NOTE: Identifier Extension Bit(CANMID[IDE]) has been set for Extended identifier.
+ 
+8. Transmit a CAN message from the TX device with the valid extended MID
+
+# echo testing > /dev/can1/tx4
+
+9. Determine which device received the CAN message
+
+# cat /dev/can1/rx2
+<ctrl+c>
+
+# cat /dev/can1/rx3
+testing
+<ctrl+c>
+
+RX3 received the CAN message because extended MID's are enabled and its MID
+exactly matches the MID of TX4.
+
+
+*************************************************
+    Extended CAN Message Data
+*************************************************
+In addition to the CAN message data payload, additional information can be 
+provided with each received CAN message.  This feature must be enabled on driver
+startup.  In addition, the extended information is only available through a devctl.
+
+1. Start the driver with extended CAN message information enabled
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t -M can1
+
+2. Transmit two CAN messages
+
+# echo tstdat1 > /dev/can1/tx4
+# echo tstdat2 > /dev/can1/tx4
+
+3. Read the CAN messages with extended information
+
+# canctl -u1,rx0 -r
+READ_CANMSG_EXT:
+mid = 0x100C0000
+timestamp = 0x9CDA
+dat len = 8
+dat = tstdat1
+
+# canctl -u1,rx0 -r
+READ_CANMSG_EXT:
+mid = 0x100C0000
+timestamp = 0xA0DA
+dat len = 8
+dat = tstdat2
+
+NOTE: Unlike the "cat" utility, "canctl" only reads 1 messages and then exits.
+
+4. Run the canctl utility to block until another CAN message is received
+
+# canctl -u1,rx0 -r &
+
+5. Transmit another CAN message
+
+# echo tstdat3 > /dev/can1/tx4
+
+The canctl utility unblocks and prints out the data.
+
+# READ_CANMSG_EXT:
+mid = 0x100C0000
+timestamp = 0xF16
+dat len = 8
+dat = tstdat3
+
+6. Verify that normal reads work as normal
+
+# cat /dev/can1/rx0 &
+
+# echo testing > /dev/can1/tx4
+testing
+
+# echo testing > /dev/can1/tx4
+testing
+
+NOTE: When CAN messages are consume via a normal read, the extended information is discarded.
+
+
+*************************************************
+    CAN Message Timestamps
+*************************************************
+The current CAN device timestamp value can only be read using the
+extended CAN message data (previous chapter).
+
+*************************************************
+    CAN Transmit Message Priorities
+*************************************************
+Priorities can be associated with CAN transmit messages.  The hardware uses two
+priorities (low and high) to determine which CAN message to transmit first if there 
+are multiple messages waiting to be transmitted. The default priority of the TX node
+is low (0) and can be modified to high (1).
+
+1. Start the CAN driver
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t can1
+
+2. Read the current priorities
+
+# canctl -u1,tx4 -P
+GET_PRIO = 0
+
+3. Set a new device priority
+
+# canctl -u1,tx4 -p 1
+
+
+*************************************************
+    CAN Receive Message Filtering 
+*************************************************
+The filtering provided by the message ID's (MID) can be further modified by using
+a mask.  See the Zynq CAN specification documentation. The mask specificies which 
+bits in the MID are to be ignored. By default, the mask is disabled, but it can be 
+enabled and modified by use of a devctl.
+
+1. Start the driver with extended MID's enabled
+
+# slay dev-can-xzynq
+# dev-can-xzynq -t -x can1
+
+2. Get initial mask values
+
+# canctl -u1,rx0 -F
+MFILTER = 0x1FFFFFFF
+
+# canctl -u1,rx1 -F
+MFILTER = 0x1FFFFFFF
+
+# canctl -u1,tx4 -F
+Filtering only availanle for RX nodes
+
+3. Get initial MID values
+
+# canctl -u1,rx0 -M
+GET_MID = 0x100C0000
+
+# canctl -u1,rx1 -M
+GET_MID = 0x101C0000
+
+# canctl -u1,tx4 -M
+GET_MID = 0x100C0000
+
+4. Set new MID values for rx0, rx1 and tx4
+
+# canctl -u1,rx0 -m0x100C0001
+# canctl -u1,rx1 -m0x100C0002
+# canctl -u1,tx4 -m0x100C0002
+
+# canctl -u1,rx0 -M
+GET_MID = 0x100C0001
+
+# canctl -u1,rx1 -M
+GET_MID = 0x100C0002
+
+# canctl -u1,tx4 -M
+GET_MID = 0x100C0002
+
+5. Transmit a CAN message from tx4
+
+# echo testing > /dev/can1/tx4
+
+6. Determine which RX device received that message
+
+# cat /dev/can1/rx0
+<ctrl+c>
+
+# cat /dev/can1/rx1
+testing
+<ctrl+c>
+
+RX1 received the message because its MID exactly matched the MID of TX4
+
+7. Set the LAM filter on RX0 and RX1
+
+# canctl -u1,rx0 -f0xFFFFFFF0
+# canctl -u1,rx1 -f0xFFFFFFF0
+
+8. Transmit a CAN message from tx4
+
+echo testing > /dev/can1/tx4
+
+9. Determine which RX device received that message
+
+# cat /dev/can1/rx1
+<ctrl+c>
+
+# cat /dev/can1/rx0
+testing
+
+RX0 and RX1 now appear to have the same MID since the last nibble is now
+ignored for both devices because they have the last nibble of the filter cleared.
+Therefore, RX0 received the message because it is the first message buffer with 
+the most matching MID bits. 
+
+
+*************************************************
+    CAN Device Errors
+*************************************************
+An error devctl can be sent to a CAN device to obtain driver specific error information
+(each driver will return error data that must be interpretted specifically for that
+device). In the case of dev-can-xzynq, the error devctl returns the current status
+of the CAN Error and Status Register (CAN_ESR). It also returns the last recorded
+CAN Error and Status Register value by the interrupt routine, eg the error
+and status at the time of the most recent received message.
+
+1. Start the driver on DCAN1 with no loopback in order that bus errors can be generated
+
+# slay dev-can-xzynq
+# dev-can-xzynq can1
+
+2. Send the error devctl to read the error status
+
+# canctl -u1 -e
+ERROR drvr1 = 0x0
+ERROR drvr2 = 0x0
+
+drvr1: ESR register
+
+NOTE: The value of drvr2 is cleared after reading. Refer to the Zynq CAN 
+documentation for interpretation of the error bit values.
+
+
+*************************************************
+    CAN Operation Between 2 Zynq ZC702 Boards
+*************************************************
+The Zynq ZC702 boards have a CAN connector pair(J15 and J53) on application board. If two
+boards are connected via this interface, they communicate via the CAN bus.
+
+1. Start the CAN driver on Zynq ZC702 board #1
+
+# dev-can-xzynq -p9 can1
+
+2. Start the CAN driver on Zynq ZC702 board #2
+
+# dev-can-xzynq -p9 can1
+
+3. With the default configuration, the MID's of both drivers running on the two boards
+should correspond:
+
+Device Mailbox  MID
+============================
+RX0/TX4		0x100C0000
+RX1			0x101C0000
+RX2			0x102C0000
+RX3			0x103C0000
+
+Therefore, messages transmitted from the TX device of one board will be received by the
+RX device of the second board with the matching MID.
+
+4. Run a client application to read CAN messages on the first receive mailbox of
+Zynq ZC702 board #1
+
+# cat /dev/can1/rx0 &
+
+5. Transmit a CAN message from Zynq ZC702 board #2 with a matching MID
+
+# echo testing > /dev/can1/tx4
+
+6. The client aplication on Zynq ZC702 board #1 should recieve the message
+
+testing
+
+7. To run a stress test on the CAN bus, continually tranmsit messages from Zynq ZC702
+board #2
+
+# while true
+> do
+> echo testing > /dev/can1/tx4
+> done
+
+8. The client application on Zynq ZC702 board #1 should recieve the messages
+
+testing
+testing
+testing
+.
+.
+.
+testing
+testing
+testing
+
+<ctrl+c> on Zynq ZC702 board #2 to stop
+
+9. All other tests under the General Operation/Loopback Testing should apply.
+
+10. The CAN bus bitrates can be changed with predefined bitrate options
+passed to the driver. Restart the driver on Zynq ZC702 board #1 with a new bitrate
+
+# slay dev-can-xzynq
+# dev-can-xzynq -p9 -b20K can1
+# cat /dev/can1/rx0 &
+
+11. Attempt to transmit a message from Zynq ZC702 board #2
+
+# echo testing > /dev/can1/tx4
+
+12. Verify no CAN message were received by board #1
+
+13. Restart the driver on Zynq ZC702 board #2 with a new bitrate
+
+# slay dev-can-xzynq
+# dev-can-xzynq -p9 -b20K can1
+ 
+14. Transmit a message from Zynq ZC702 board #2
+
+# echo testing > /dev/can1/tx4
+
+15. Verify the CAN message is received by board #1
+
+16. Non-predefined bitrates also be configured using the "-B" option by
+passing the values calculated according the equations in the Zynq CAN
+documenation.

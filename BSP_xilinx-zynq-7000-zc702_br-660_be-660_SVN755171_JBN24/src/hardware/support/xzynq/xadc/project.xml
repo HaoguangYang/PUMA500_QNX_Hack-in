@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<module name="xadc-xzynq">
+  <classification>Driver</classification>
+  <description>
+    <short>Xilinx Zynq XADC Driver</short>
+    <abstract><![CDATA[
+	                The XADC driver for the Xilinx BSP.
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="xzynq" generated="true">
+      <location basedir="arm/le">xadc-xzynq</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="false" location="hardware/support/xzynq/xadc"/>
+  </requires>
+</module>

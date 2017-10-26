@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<module name="devc-serxzynq">
+  <classification>Driver</classification>
+  <description>
+    <short>Serial driver for serxzynq compatible uarts</short>
+    <abstract><![CDATA[
+                        The devc-serxzynq manager is a small serial device manager for QNX Neutrino.
+                ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>be</byteOrder>
+        <byteOrder>le</byteOrder>
+      </cpu>
+      <cpu isa="arm">
+        <byteOrder>le.v7</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="serxzynq" generated="true">
+      <location basedir="arm/be">devc-serxzynq</location>
+      <location basedir="arm/le">devc-serxzynq</location>
+    </component>
+    <component id="tserxzynq" generated="true">
+      <location basedir="arm/be">devc-tserxzynq</location>
+      <location basedir="arm/le">devc-tserxzynq</location>
+    </component>
+  </contents>
+  <requires>
+    <part build="true" location="lib/io-char"/>
+    <part build="false" location="hardware/devc"/>
+  </requires>
+</module>

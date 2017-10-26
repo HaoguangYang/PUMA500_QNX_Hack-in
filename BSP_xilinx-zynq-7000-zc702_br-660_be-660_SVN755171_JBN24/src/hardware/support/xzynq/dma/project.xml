@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<module name="dma-xzynq">
+  <classification>SDK</classification>
+  <description>
+    <short>Xilinx Zynq DMA library</short>
+    <abstract><![CDATA[
+	                The dma-xzynq library operates the DMA Controller.
+	        ]]></abstract>
+  </description>
+  <supports>
+    <availability>
+      <cpu isa="arm">
+        <byteOrder>le</byteOrder>
+      </cpu>
+    </availability>
+  </supports>
+  <contents>
+    <component id="SharedObj" generated="true">
+      <location basedir="arm/so.le">		                libdma-xzynq.so		        </location>
+    </component>
+    <component id="SharedArchive" generated="true">
+      <location basedir="arm/so.le">		                libdma-xzynqS.a		        </location>
+    </component>
+  </contents>
+</module>
