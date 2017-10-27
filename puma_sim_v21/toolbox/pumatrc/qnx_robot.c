@@ -148,8 +148,9 @@ float system_init(float freq)
     /* --- Arm is NOT calibrated so set everything to zero. */
     for (i=0; i<6; i++){
       pumaVarsG.pos[i] = 0L;            /* reset the variable */
+      //The following line contains "RISKY" pointer operation...
       robot_shortwr(POSITION, i, &joint[i]);    /* reset the encoder */
-    } /* endfor */
+	} /* endfor */
     pumaVarsG.discrete = 0;           /* make sure all bits are cleared */
     out16(discrete_reg_port, pumaVarsG.discrete);
   } else {
@@ -261,7 +262,7 @@ short robot_fltrd(short option, short chan, float *val)
 {
   short tempPos,i;
   float jt4, jt5;
-
+  uintptr_t status_reg_port;
   switch (option) {
     case POSITION6:     /* Read all encoders -- val is in radians */
       for (i=0; i<6; i++){
@@ -302,7 +303,7 @@ short robot_fltrd(short option, short chan, float *val)
       } /* endswitch */
       return I_OK;
     case POT:           /* Read a single ADC */
-      uintptr_t status_reg_port = mmap_device_io(0x0F, pumaVarsG.base + STATUS_REG);
+	  status_reg_port = mmap_device_io(0x0F, pumaVarsG.base + STATUS_REG);
 #ifdef TRC004F
       /* --- Enable the ADC conversion complete bit. */
       pumaVarsG.discrete = pumaVarsG.discrete | ADC_MASK_BIT;
@@ -400,7 +401,7 @@ short robot_longrd(short option, short chan, long *val)
           out16(mmap_device_io(0x0F, pumaVarsG.base + ADC_MUX_SELECT), (i << 7) | ADC_CMD_VAL);
           /* --- Wait for the conversion complete flag. */
           while ((in16(status_reg_port) & ADC_STAT_MASK) != 0);
-          tempPot += (long)(in16(mmmap_device_io(0x0F, pumaVarsG.base + ADC_VALUE)) & 0xFFF0);
+          tempPot += (long)(in16(mmap_device_io(0x0F, pumaVarsG.base + ADC_VALUE)) & 0xFFF0);
           /* --- Disable and clear the ADC conversion complete bit. */
           pumaVarsG.discrete = pumaVarsG.discrete & (~ADC_MASK_BIT);
           out16(mmap_device_io(0x0F, pumaVarsG.base + DISCRETE_REG), pumaVarsG.discrete);

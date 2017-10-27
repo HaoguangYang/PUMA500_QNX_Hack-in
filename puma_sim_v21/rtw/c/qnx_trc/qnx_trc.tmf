@@ -236,7 +236,7 @@ LINT_ERROFF  = $(LINT_ERROFF2),E_INDISTING_FROM_TRUNC2,E_NAME_USED_NOT_DEF2
 #--------------------------------- Rules ---------------------------------------
 
 $(PROGRAM) : $(OBJS) $(LIBS)
-	$(LD) $(LDFLAGS) -o $@ $(LINK_OBJS) $(LIBS) $(SYSLIBS)
+	$(LD) $(LDFLAGS) $(INCLUDES) -o $@ $(LINK_OBJS) $(LIBS) $(SYSLIBS)
 	@echo "### Created executable: $(MODEL)"
 
 %.o : %.c
