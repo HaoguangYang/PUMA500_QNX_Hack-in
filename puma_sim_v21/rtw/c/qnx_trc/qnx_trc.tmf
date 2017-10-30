@@ -30,6 +30,25 @@
 #       This template makefile is designed to be used with a system target
 #       file that contains 'rtwgensettings.BuildDirSuffix' see qnx.tlc
 
+#---------------------- USAGE WITH QNX MOMENTICS IDE ---------------------------
+#
+# File -> New -> Makefile Project with Existing Code
+# Navigate to the source folder (/..._stg or /..._trc)
+# Toolchain: Multi-Toolchain
+# Finish
+# On Project Explorer, right click the project imported, choose Properties
+# Under C/C++ Build Tab, make sure Automatic Makefile Generation in Builder Settings is NOT SELECTED
+# In Behavior, under Build, type in the following:
+# 		-f "$(MODEL).mk" MODELLIB="$(MODEL)lib.lib" RELATIVE_PATH_TO_ANCHOR=.. MODELREF_TARGET_TYPE=NONE ISPROTECTINGMODEL=NOTPROTECTING MATLAB=C:\PROGRA~1\MATLAB\R2015b
+# Please change the first $(MODEL) to the model name you have.
+# (You may need to change MATLAB Path to your actual installation path and version.)
+# Under Clean, similiarly type in:
+#		-f "$(MODEL).mk" clean
+# OR
+# 		-f "$(MODEL).mk" purge
+# (Sorry to my Windows Fellows, but it uses command rm ...)
+# You should now build your generated code just as building under command line.
+
 #------------------------ Macros read by make_rtw ------------------------------
 #
 # The following macros are read by the Real-Time Workshop build procedure:
@@ -184,7 +203,7 @@ SRCS      = $(REQ_SRCS) $(S_FUNCTIONS) $(SOLVER)
 OBJS      = $(SRCS:.c=.o) $(USER_OBJS)
 LINK_OBJS = $(SRCS:.c=.o) $(LOCAL_USER_OBJS)
 
-PROGRAM = ../$(MODEL)
+# PROGRAM = ../$(MODEL)
 
 #------------- Test Compile using gcc -Wall to look for warnings ---------------
 #
@@ -235,7 +254,7 @@ LINT_ERROFF  = $(LINT_ERROFF2),E_INDISTING_FROM_TRUNC2,E_NAME_USED_NOT_DEF2
 
 #--------------------------------- Rules ---------------------------------------
 
-$(PROGRAM) : $(OBJS) $(LIBS)
+$(MODEL) : $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) $(INCLUDES) -o $@ $(LINK_OBJS) $(LIBS) $(SYSLIBS)
 	@echo "### Created executable: $(MODEL)"
 
@@ -315,8 +334,8 @@ purge : clean
 	        $(MODEL)_private.h $(MODEL).rtw $(MODULES) rtw_proj.tmw $(MAKEFILE)
 
 clean :
-	@echo "### Deleting the objects and $(PROGRAM)"
-	@\rm -f $(LINK_OBJS) $(PROGRAM)
+	@echo "### Deleting the objects and $(MODEL)"
+	@\rm -f $(LINK_OBJS) $(MODEL)
 
 lint  : rtwlib.ln
 	@lint -errchk -errhdr=%user -errtags=yes -F -L. -lrtwlib -x -Xc \

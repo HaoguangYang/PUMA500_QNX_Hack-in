@@ -169,7 +169,7 @@
     ##    for more information on remote debugging
     ##  - the commands shown require that NETWORK is enabled too
     #######################################################################
-    devc-pty
+    devc-pty &
     waitfor /dev/ptyp0 4
     waitfor /dev/socket 4
     PATH=$PATH:/usr/bin qconn port=8000
@@ -278,7 +278,7 @@ rtc
 ###########################################################################
 ## uncomment for REMOTE_DEBUG
 ###########################################################################
-devc-pty
+devc-pty &
 qconn
 /usr/bin/pdebug=pdebug
 
